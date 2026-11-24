@@ -163,7 +163,7 @@ function toggleShuffle() {
   const btn = findSpotifyShuffleBtn();
   if (!btn) return;
   btn.click();
-  setTimeout(sendMetadata, 350);
+  setTimeout(sendMetadata, 200);
 }
 
 // LOOP: przełącza bezpośrednio OFF <-> powtarzanie jednego utworu ("mixed")
@@ -187,7 +187,7 @@ function toggleLoop() {
   } else {
     // Z trybu "mixed" (lub "true") jedno kliknięcie wyłącza całkowicie ("false")
     btn.click();
-    setTimeout(sendMetadata, 250);
+    setTimeout(sendMetadata, 200);
   }
 }
 
@@ -316,22 +316,22 @@ chrome.runtime.onMessage.addListener((data) => {
 
     case "next":
       getButton("next")?.click();
-      setTimeout(sendMetadata, 300);
+      setTimeout(sendMetadata, 200);
       break;
 
     case "prev":
       getButton("prev")?.click();
-      setTimeout(sendMetadata, 300);
+      setTimeout(sendMetadata, 200);
       break;
 
     case "shuffle":
       toggleShuffle();
-      setTimeout(sendMetadata, 300);
+      setTimeout(sendMetadata, 200);
       break;
 
     case "loop":
       toggleLoop();
-      setTimeout(sendMetadata, 400);
+      setTimeout(sendMetadata, 200);
       break;
 
     case "volume": {

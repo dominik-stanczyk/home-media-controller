@@ -12,7 +12,7 @@ socket.on("disconnect", () => console.log("WS DISCONNECTED"));
 socket.on("connect_error", (err) => console.error("WS ERROR:", err));
 
 socket.on("command", async (data) => {
-  console.log("BACKGROUND OTRZYMAŁ KOMENDĘ:", data);
+  console.log("BACKGROUND RECEIVED:", data);
   console.log("ACTIVE TAB:", activeTabId);
 
   // Najpierw próbujemy aktywną kartę
@@ -41,13 +41,9 @@ socket.on("command", async (data) => {
     ]
   });
 
-  console.log("ZNALEZIONE KARTY:", tabs.map(tab => ({
-    id: tab.id,
-    url: tab.url
-  })));
 
   if (!tabs.length) {
-    console.warn("Nie znaleziono kart z odtwarzaczami");
+    console.warn("Player tab was not found");
     return;
   }
 
@@ -57,15 +53,15 @@ socket.on("command", async (data) => {
       await chrome.tabs.sendMessage(tab.id, data);
 
       activeTabId = tab.id;
-      console.log("KOMENDA DOSTARCZONA:", tab.id);
+      console.log("COMMAND DELIVERED:", tab.id);
       return;
 
     } catch (error) {
-      console.warn("Brak content script w karcie:", tab.id);
+      console.warn("NO CONTENT SCRIPT:", tab.id);
     }
   }
 
-  console.error("Nie udało się dostarczyć komendy do żadnej karty");
+  console.error("COULDN'T DELIVER THE PACKAGE TO ANY TAB");
 });
 
 chrome.runtime.onMessage.addListener((message, sender) => {
@@ -74,7 +70,6 @@ chrome.runtime.onMessage.addListener((message, sender) => {
   const tabId = sender.tab.id;
   const playingNow = !message.paused;
 
-  console.log("MEDIA DETECTED:", message.source, message.title);
 
   if (activeTabId === null) {
     activeTabId = tabId;
