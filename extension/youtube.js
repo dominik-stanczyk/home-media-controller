@@ -84,7 +84,8 @@ function sendMetadata() {
     paused: video.paused,
     volume: video.volume,
     shuffle: isShuffleActive,
-    loop: video.loop
+    loop: video.loop,
+    accentColor: "#ff0000"
   };
 
   chrome.runtime.sendMessage(data).catch(() => {});

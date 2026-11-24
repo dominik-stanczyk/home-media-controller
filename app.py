@@ -257,6 +257,7 @@ HTML = """
         let isPlaying = true;
   let isShuffle = false;
   let isLoop = false;
+  let currentAccent = "#ff0000";
 
   function setPlayIcon(playing) {
     if (isPlaying === playing) return;
@@ -277,14 +278,15 @@ HTML = """
   }
 
   function applyOptimisticAction(action) {
+
     if (action === 'pause') {
       setPlayIcon(!isPlaying);
     } else if (action === 'shuffle') {
       isShuffle = !isShuffle;
-      document.getElementById('btn-shuffle').style.color = isShuffle ? "#ff0000" : "white";
+      document.getElementById('btn-shuffle').style.color = isShuffle ? currentAccent : "white";
     } else if (action === 'loop') {
       isLoop = !isLoop;
-      document.getElementById('btn-loop').style.color = isLoop ? "#ff0000" : "white";
+      document.getElementById('btn-loop').style.color = isLoop ? currentAccent : "white";
     }
   }
 
@@ -299,6 +301,9 @@ HTML = """
 
 
   socket.on('status_update', function(data) {
+      const accent = data.accentColor || "#ff0000";
+      currentAccent = accent;
+
       if (typeof data.paused !== 'undefined') {
           setPlayIcon(!data.paused);
       } else if (typeof data.isPlaying !== 'undefined') {
@@ -307,18 +312,21 @@ HTML = """
 
       isShuffle = Boolean(data.shuffle);
       const sBtn = document.getElementById('btn-shuffle');
-      sBtn.style.color = isShuffle ? "#ff0000" : "white";
+      sBtn.style.color = isShuffle ? accent : "white";
 
       isLoop = Boolean(data.loop);
       const lBtn = document.getElementById('btn-loop');
-      lBtn.style.color = isLoop ? "#ff0000" : "white";
+      lBtn.style.color = isLoop ? accent : "white";
       
       document.getElementById('track-title').innerText = data.title || "Brak utworu";
       document.getElementById('track-author').innerText = data.author || "";
 
-      // Zabezpieczenie paska postępu (pilnuje zakresu 0% - 100%)
+      //pasek postępu
       const progress = Math.max(0, Math.min(100, Number(data.progress) || 0));
-      document.getElementById('progress-bar').style.width = progress + "%";
+      const pBar = document.getElementById('progress-bar');
+      pBar.style.width = progress + "%";
+      pBar.style.background = accent;
+      pBar.style.boxShadow = `0 0 8px ${accent}`;
       
       document.getElementById('track-time').innerText = data.timeStr || "0:00 / 0:00";
 

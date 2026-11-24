@@ -1,7 +1,7 @@
 # REV 1.0 – Core Flask Server & YouTube Integration
 
 **Status:** Completed  
-**Scope:** Local WebSocket server, Chrome Extension (`background.js` + YouTube DOM parser), and initial serial port listener thread (`COM5`).
+**Scope:** Local WebSocket server, Chrome Extension (`background.js` + YouTube DOM parser), and initial serial port listener thread (`COM`).
 
 ---
 
@@ -12,7 +12,7 @@ The first working revision establishes the core communication pipeline between t
 * **Flask + Socket.IO Backend (`app.py`):** Event-driven architecture broadcasting playback state updates (`isPlaying`, track metadata, timestamps) and relaying control commands with minimal overhead.
 * **Optimized YouTube Parser:** Lightweight DOM observer extracting track title, artist, album thumbnail, and playback progress (`1:05 / 4:59`) without polling bloat.
 * **Command Relay (`background.js`):** Instant execution of `play/pause`, `next/prev`, `shuffle`, `repeat`, and quick volume presets (`1%`, `5%`, `15%`).
-* **Hardware-Ready Serial Thread:** Background `uart_listener` task initialized and polling for the STM32 receiver (`COM5`) to bridge physical RF remote inputs in upcoming revisions.
+* **Hardware-Ready Serial Thread:** Background `uart_listener` task initialized and polling for the STM32 receiver (`COM`) to bridge physical RF remote inputs in upcoming revisions.
 
 ---
 
