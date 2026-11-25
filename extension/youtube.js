@@ -76,6 +76,7 @@ function sendMetadata() {
 
   const data = {
     type: "METADATA",
+    source: "youtube",
     title: document.title.replace(/\s*-\s*YouTube$/, "").trim(),
     author: document.querySelector("#upload-info #channel-name a")?.innerText?.trim() || "YouTube",
     progress: duration > 0 ? (currentTime / duration) * 100 : 0,

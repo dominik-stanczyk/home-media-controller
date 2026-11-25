@@ -340,8 +340,8 @@ chrome.runtime.onMessage.addListener((data) => {
 
       let mappedVolume = rawValue;
       if (Math.abs(rawValue - 0.01) < 0.005) mappedVolume = 0.10;
-      else if (Math.abs(rawValue - 0.05) < 0.005) mappedVolume = 0.25;
-      else if (Math.abs(rawValue - 0.15) < 0.005) mappedVolume = 0.50;
+      else if (Math.abs(rawValue - 0.05) < 0.005) mappedVolume = 0.30;
+      else if (Math.abs(rawValue - 0.15) < 0.005) mappedVolume = 0.50; // TODO: Replace preset mapping with direct clamped float (0.0-1.0, step 0.02) once rotary encoder state is handled on STM32
 
       setSpotifyVolume(mappedVolume);
       sendMetadata(); // Natychmiastowe wysłanie nowego stanu bez czekania 300 ms

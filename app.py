@@ -364,12 +364,46 @@ def handle_ui_command(data):
 
 last_status = {}
 
+current_media = {
+    "title": "",
+    "artist": "",
+    "duration_sec": 0,
+    "current_sec": 0,
+    "cover_64x64": b"",
+    "is_playing": False
+}
+
+def updateFullMetaData(data):
+    """Aktualizuje stan utworu i kompresuje okładkę tylko raz przy zmianie piosenki."""
+    global current_media
+    current_media["title"] = data.get("title", "")
+    current_media["artist"] = data.get("artist", "")
+    current_media["duration_sec"] = int(data.get("duration", 0))
+    current_media["current_sec"] = int(data.get("currentTime", 0))
+    # TODO: Tutaj w przyszłości pobierzesz i skompresujesz thumbnail do 64x64 (1-bit bitmapa pod OLED)
+
+def sendAllMetaData():
+    """Pakuje cały stan (tytuł, autor, czas całkowity, okładka) w ramkę i wysyła po UART do STM32."""
+    # TODO: Zbudować ramkę z nagłówkiem, danymi z current_media i sumą kontrolną (CRC/XOR)
+    print(f"[UART TX] Full resync: {current_media['artist']} - {current_media['title']}")
+
 @socketio.on('update_status')
 def handle_status(data):
     global last_status
     last_status = data
     socketio.emit('status_update', data)
+    #sendAllMetaData() gdy zmieni się stan
 
+    current_media["current_sec"] = int(data.get("currentTime", 0))
+    current_media["is_playing"] = bool(data.get("isPlaying", False))
+
+    # Sprawdź, czy zmieniła się piosenka (porównanie tytułu i autora)
+    new_title = data.get("title", "")
+    new_artist = data.get("artist", "")
+
+    if new_title != current_media["title"] or new_artist != current_media["artist"]:
+        updateFullMetaData(data)
+        sendAllMetaData()
 #log przy łączeniu 
 
 @socketio.on('connect')
@@ -381,29 +415,43 @@ def handle_connect():
 import time
 import serial
 
+ACTIONS = {
+    "BTN_1": {"action": "next", "value": ""},
+    "BTN_2": {"action": "pause", "value": ""},
+    "BTN_3": {"action": "prev", "value": ""},
+    "BTN_4": {"action": "shuffle", "value": ""},
+    "BTN_5": {"action": "", "value": ""}, #przyszły sleep i wake up, w while dodać push requesta, po obudzeniu RF i wszystko będzie online więc jest to dobry moment aby zrobić pełnego refresha
+    "BTN_6": {"action": "loop", "value": ""},
+    "BTN_7": {"action": "volume", "value": 0.01},
+    "BTN_8": {"action": "volume", "value": 0.05},
+    "BTN_9": {"action": "volume", "value": 0.15}
+}
+
+
 def uart_listener():
     stm_connected = None  # None = stan początkowy, True = połączony, False = odłączony
 
     while True:
         try:
-            with serial.Serial('COM5', 115200, timeout=1) as ser:
+            with serial.Serial('COM3', 115200, timeout=1) as ser:
                 if stm_connected is not True:
-                    print("STM32 połączone na COM5")
+                    print("STM32 połączone na COM3")
                     stm_connected = True
 
                 while True:
                     if ser.in_waiting > 0:
                         line = ser.readline().decode('utf-8', errors='ignore').strip()
-                        if line:
-                            print(f"Odebrano z STM32: {line}")
-                            socketio.emit('command', {'action': line, 'value': ""})
-                            socketio.emit('hw_action', {'action': line})
-                    time.sleep(0.01)
+                        if line in ACTIONS:
+                          print(f"STM32 -> {line} -> {ACTIONS[line]}")
+                          socketio.emit('command', ACTIONS[line])
+                          socketio.emit('hw_action', ACTIONS[line])
+                          #sendAllMetaData() gdy przyjdzie wake up
+                    socketio.sleep(0.01)
 
         except serial.SerialException:
             # Wypisz komunikat tylko raz przy zmianie stanu na rozłączony
             if stm_connected is not False:
-                print("STM32 odłączone (oczekiwanie na COM5...)")
+                print("STM32 odłączone (oczekiwanie na COM3...)")
                 stm_connected = False
             time.sleep(2)
 

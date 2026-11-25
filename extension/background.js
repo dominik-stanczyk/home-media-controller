@@ -18,7 +18,7 @@ socket.on("command", async (data) => {
   // Najpierw próbujemy aktywną kartę
   if (activeTabId !== null) {
     try {
-      console.log("WYSYŁAM DO KARTY:", activeTabId);
+      console.log("SENDING TO THE TAB:", activeTabId);
 
       await chrome.tabs.sendMessage(activeTabId, data);
       return;
