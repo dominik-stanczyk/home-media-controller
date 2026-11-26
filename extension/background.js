@@ -1,7 +1,9 @@
 importScripts("socket.io.js");
 
 const socket = io("http://127.0.0.1:5000", {
-  transports: ["websocket"],
+    transports: ["websocket"], // Najpierw stabilny HTTP polling, potem upgrade do WebSocket
+    reconnection: true,
+    reconnectionDelay: 2000
 });
 
 let activeTabId = null;
@@ -9,7 +11,7 @@ let isActiveTabPlaying = false;
 
 socket.on("connect", () => console.log("WS CONNECTED"));
 socket.on("disconnect", () => console.log("WS DISCONNECTED"));
-socket.on("connect_error", (err) => console.error("WS ERROR:", err));
+socket.on("connect_error", (err) => console.log("Server offline, reconnecting in 2s..."));
 
 socket.on("command", async (data) => {
   console.log("BACKGROUND RECEIVED:", data);
@@ -61,7 +63,7 @@ socket.on("command", async (data) => {
     }
   }
 
-  console.error("COULDN'T DELIVER THE PACKAGE TO ANY TAB");
+  console.warn("COULDN'T DELIVER THE PACKAGE TO ANY TAB");
 });
 
 chrome.runtime.onMessage.addListener((message, sender) => {

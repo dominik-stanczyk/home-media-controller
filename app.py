@@ -177,6 +177,7 @@ def uart_listener():
                 if stm_connected is not True:
                     print("STM32 połączone na COM3")
                     stm_connected = True
+                    sendAllMetaData()
 
                 while True:
                     if ser.in_waiting > 0:
