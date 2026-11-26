@@ -167,27 +167,51 @@ function toggleShuffle() {
 }
 
 // LOOP: przełącza bezpośrednio OFF <-> powtarzanie jednego utworu ("mixed")
+
+// LOOP: tylko OFF <-> REPEAT ONE
 function toggleLoop() {
   const btn = getButton("repeat");
   if (!btn) return;
 
   const state = btn.getAttribute("aria-checked");
 
+  // Jeśli Repeat One jest aktywny, wyłącz repeat
+  if (state === "mixed") {
+    btn.click();
+    setTimeout(sendMetadata, 50);
+    return;
+  }
+
+  // Jeśli OFF, przejdź przez playlist repeat do repeat one
   if (state === "false" || state === null) {
-    // 1. kliknięcie włącza powtarzanie playlisty ("true"),
-    // 2. kliknięcie po 200 ms przeskakuje na powtarzanie 1 utworu ("mixed")
     btn.click();
-    setTimeout(() => {
+
+    const observer = new MutationObserver(() => {
       const updated = getButton("repeat");
-      if (updated?.getAttribute("aria-checked") === "true") {
+      if (!updated) return;
+
+      const updatedState = updated.getAttribute("aria-checked");
+
+      if (updatedState === "true") {
+        observer.disconnect();
+
+        // Natychmiastowe przejście do Repeat One
         updated.click();
+
+        requestAnimationFrame(sendMetadata);
+      } else if (updatedState === "mixed") {
+        observer.disconnect();
+        sendMetadata();
       }
-      setTimeout(sendMetadata, 200);
-    }, 200);
-  } else {
-    // Z trybu "mixed" (lub "true") jedno kliknięcie wyłącza całkowicie ("false")
-    btn.click();
-    setTimeout(sendMetadata, 200);
+    });
+
+    observer.observe(btn, {
+      attributes: true,
+      attributeFilter: ["aria-checked"]
+    });
+
+    // Zabezpieczenie przed pozostawieniem obserwatora
+    setTimeout(() => observer.disconnect(), 1500);
   }
 }
 
